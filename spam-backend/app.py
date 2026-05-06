@@ -13,6 +13,7 @@ import os
 from datetime import datetime, timedelta
 from functools import wraps
 from pymongo import MongoClient
+from bson import ObjectId
 from dotenv import load_dotenv
 
 # ==================== ENV LOAD ====================
@@ -150,18 +151,27 @@ def predict():
 
         result = "Spam" if str(result_raw).lower() == "spam" else "Not Spam"
 
-        # Save history
-        if predictions_col:
+        # Confidence score
+        try:
+            proba = model.predict_proba(vec)[0]
+            confidence = round(float(max(proba)) * 100, 1)
+        except Exception:
+            confidence = None
+
+        # Save to history
+        if predictions_col is not None:
             predictions_col.insert_one({
                 "user_id": request.user["user_id"],
                 "email": request.user["email"],
                 "message": message,
                 "result": result,
+                "confidence": confidence,
                 "created_at": datetime.utcnow()
             })
 
         return jsonify({
             "result": result,
+            "confidence": confidence,
             "message": message
         }), 200
 
@@ -173,11 +183,11 @@ def predict():
 # ==================== REGISTER ====================
 @app.route("/register", methods=["POST"])
 def register():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
-    email = data.get("email")
-    password = data.get("password")
-    name = data.get("name")
+    email    = data.get("email", "").strip()
+    password = data.get("password", "")
+    name     = data.get("name", "").strip()
 
     if not email or not password or not name:
         return jsonify({"error": "Missing fields"}), 400
@@ -185,12 +195,25 @@ def register():
     hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
     try:
-        users_col.insert_one({
+        result = users_col.insert_one({
             "email": email,
             "password": hashed,
-            "name": name
+            "name": name,
+            "created_at": datetime.utcnow()
         })
-        return jsonify({"message": "User created"}), 201
+
+        # FIX: return token + user so frontend can auto-login after register
+        token = generate_token(result.inserted_id, email, name)
+
+        return jsonify({
+            "token": token,
+            "user": {
+                "id": str(result.inserted_id),
+                "name": name,
+                "email": email
+            }
+        }), 201
+
     except Exception:
         return jsonify({"error": "User already exists"}), 409
 
@@ -198,19 +221,111 @@ def register():
 # ==================== LOGIN ====================
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
-    user = users_col.find_one({"email": data.get("email")})
+    email    = data.get("email", "").strip()
+    password = data.get("password", "")
+
+    if not email or not password:
+        return jsonify({"error": "Missing fields"}), 400
+
+    user = users_col.find_one({"email": email})
 
     if not user:
         return jsonify({"error": "Invalid login"}), 401
 
-    if not bcrypt.checkpw(data["password"].encode(), user["password"]):
+    if not bcrypt.checkpw(password.encode(), user["password"]):
         return jsonify({"error": "Invalid login"}), 401
 
     token = generate_token(user["_id"], user["email"], user["name"])
 
-    return jsonify({"token": token})
+    # FIX: return token + user object so frontend can store user info
+    return jsonify({
+        "token": token,
+        "user": {
+            "id": str(user["_id"]),
+            "name": user["name"],
+            "email": user["email"]
+        }
+    }), 200
+
+
+# ==================== HISTORY ====================
+@app.route("/history", methods=["GET", "OPTIONS"])
+@require_auth
+def get_history():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
+
+    try:
+        user_id = request.user["user_id"]
+
+        raw = list(
+            predictions_col.find(
+                {"user_id": user_id},
+                {"_id": 0, "message": 1, "result": 1, "confidence": 1, "created_at": 1}
+            ).sort("created_at", -1).limit(50)
+        )
+
+        # Convert datetime to ISO string for JSON serialisation
+        predictions = []
+        for p in raw:
+            predictions.append({
+                "message":    p.get("message", ""),
+                "result":     p.get("result", ""),
+                "confidence": p.get("confidence"),
+                "created_at": p["created_at"].isoformat() if p.get("created_at") else None
+            })
+
+        return jsonify({"predictions": predictions}), 200
+
+    except Exception as e:
+        logger.error(f"History Error: {e}")
+        return jsonify({"error": "Failed to fetch history"}), 500
+
+
+# ==================== DASHBOARD STATS ====================
+@app.route("/dashboard/stats", methods=["GET", "OPTIONS"])
+@require_auth
+def get_stats():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
+
+    try:
+        user_id = request.user["user_id"]
+
+        total = predictions_col.count_documents({"user_id": user_id})
+        spam  = predictions_col.count_documents({"user_id": user_id, "result": "Spam"})
+        safe  = total - spam
+
+        recent_raw = list(
+            predictions_col.find(
+                {"user_id": user_id},
+                {"_id": 0, "message": 1, "result": 1, "confidence": 1, "created_at": 1}
+            ).sort("created_at", -1).limit(5)
+        )
+
+        recent = []
+        for p in recent_raw:
+            recent.append({
+                "message":    p.get("message", ""),
+                "result":     p.get("result", ""),
+                "confidence": p.get("confidence"),
+                "created_at": p["created_at"].isoformat() if p.get("created_at") else None
+            })
+
+        return jsonify({
+            "stats": {
+                "total": total,
+                "spam":  spam,
+                "safe":  safe
+            },
+            "recent": recent
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Stats Error: {e}")
+        return jsonify({"error": "Failed to fetch stats"}), 500
 
 
 # ==================== MAIN ====================
