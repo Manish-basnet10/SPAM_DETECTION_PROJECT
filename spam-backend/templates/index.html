@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailGuard - AI Spam Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text">MailGuard</span>
+            </div>
+            <div class="navbar-subtitle">AI-Powered Spam Detection</div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">AI-Powered Spam Detection</h1>
+            <p class="hero-subtitle">Instantly detect spam emails using advanced machine learning technology</p>
+            <p class="hero-description">Protect your inbox from unwanted emails with our intelligent spam detection system</p>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Glassmorphism Card -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h2>Analyze Your Email</h2>
+                <p class="card-subtitle">Paste your email content below for instant analysis</p>
+            </div>
+
+            <!-- Form -->
+            <form action="{{ url_for('predict') }}" method="POST" id="predictionForm" class="form-container">
+                <div class="form-group">
+                    <label for="message" class="form-label">📧 Email Content</label>
+                    <textarea
+                        id="message"
+                        name="message"
+                        class="form-textarea"
+                        placeholder="Paste your email text here...
+
+Example: 'Hi, are you available for tomorrow's meeting?'
+
+Or: 'CONGRATULATIONS! You have won a FREE iPhone! Claim now!!!'"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button type="submit" id="predictBtn" class="btn btn-primary">
+                        <span class="btn-icon">🔍</span>
+                        <span class="btn-text">Analyze Email</span>
+                    </button>
+                    <a href="{{ url_for('history') }}" class="btn btn-secondary">
+                        <span class="btn-icon">📊</span>
+                        <span class="btn-text">View History</span>
+                    </a>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingMessage" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p class="loading-text">Analyzing your email...</p>
+                </div>
+            </form>
+
+            <!-- Features -->
+            <div class="features-section">
+                <h3 class="features-title">How It Works</h3>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <h4>Lightning Fast</h4>
+                        <p>Get results in milliseconds</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🤖</div>
+                        <h4>AI Powered</h4>
+                        <p>Advanced ML algorithms</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <h4>Secure</h4>
+                        <p>Your data stays private</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text">Developed by Aastha Gupta | CSE | AI Project</p>
+    </footer>
+
+    <script>
+        const predictionForm = document.getElementById('predictionForm');
+        const predictBtn = document.getElementById('predictBtn');
+        const loadingMessage = document.getElementById('loadingMessage');
+
+        predictionForm.addEventListener('submit', function(e) {
+            loadingMessage.style.display = 'flex';
+            predictBtn.disabled = true;
+            predictBtn.style.opacity = '0.7';
+            predictBtn.innerHTML = '<span class="spinner-mini"></span><span class="btn-text">Processing...</span>';
+        });
+    </script>
+</body>
+</html>

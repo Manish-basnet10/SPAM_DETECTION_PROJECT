@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result - MailGuard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text">MailGuard</span>
+            </div>
+            <div class="navbar-subtitle">AI-Powered Spam Detection</div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="result-wrapper">
+            {% if error %}
+                <!-- Error State -->
+                <div class="result-card warning-result">
+                    <div class="result-icon large">⚠️</div>
+                    <h2 class="result-title">{{ result }}</h2>
+                    <p class="result-message">{{ error }}</p>
+                </div>
+            {% else %}
+                <!-- Success State -->
+                {% if result == 'Spam' %}
+                    <div class="result-card spam-result">
+                        <div class="result-icon large animate-bounce">🚫</div>
+                        <h2 class="result-title spam-title">This is SPAM</h2>
+                        <p class="result-message spam-message">⚠️ This email has been identified as spam. Be cautious with this sender!</p>
+                        <div class="result-stats spam-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Confidence</span>
+                                <span class="stat-value">High</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Classification</span>
+                                <span class="stat-value">{{ result }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="result-card legitimate-result">
+                        <div class="result-icon large animate-bounce">✅</div>
+                        <h2 class="result-title legitimate-title">This is NOT SPAM</h2>
+                        <p class="result-message legitimate-message">✓ This email appears to be legitimate. You can safely read this message.</p>
+                        <div class="result-stats legitimate-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Confidence</span>
+                                <span class="stat-value">High</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Classification</span>
+                                <span class="stat-value">{{ result }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Email Preview -->
+                <div class="preview-section">
+                    <h3 class="preview-title">📝 Original Email</h3>
+                    <div class="email-preview">{{ message }}</div>
+                </div>
+
+                <!-- Metadata -->
+                <div class="metadata-section">
+                    <div class="metadata-grid">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Analysis Time</span>
+                            <span class="metadata-value">{{ now.strftime('%Y-%m-%d %H:%M:%S') }} UTC</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Status</span>
+                            <span class="metadata-value saved">✓ Saved to History</span>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ url_for('home') }}" class="btn btn-primary btn-large">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Analyze Another Email</span>
+                </a>
+                <a href="{{ url_for('history') }}" class="btn btn-secondary btn-large">
+                    <span class="btn-icon">📊</span>
+                    <span class="btn-text">View All Results</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text">Developed by Aastha Gupta | CSE | AI Project</p>
+    </footer>
+</body>
+</html>

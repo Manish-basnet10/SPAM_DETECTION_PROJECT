@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - MailGuard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text">MailGuard</span>
+            </div>
+            <div class="navbar-subtitle">AI-Powered Spam Detection</div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="history-wrapper">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">📊 Prediction History</h1>
+                <p class="dashboard-subtitle">Track all your email analysis results</p>
+            </div>
+
+            {% if predictions %}
+                <!-- Statistics Cards -->
+                <div class="stats-dashboard">
+                    <div class="stat-card stat-spam">
+                        <div class="stat-number">{{ predictions|selectattr('result', 'equalto', 'Spam')|list|length }}</div>
+                        <div class="stat-label">Spam Detected</div>
+                        <div class="stat-icon">🚫</div>
+                    </div>
+                    <div class="stat-card stat-legitimate">
+                        <div class="stat-number">{{ predictions|selectattr('result', 'equalto', 'Not Spam')|list|length }}</div>
+                        <div class="stat-label">Legitimate</div>
+                        <div class="stat-icon">✅</div>
+                    </div>
+                    <div class="stat-card stat-total">
+                        <div class="stat-number">{{ predictions|length }}</div>
+                        <div class="stat-label">Total Analyzed</div>
+                        <div class="stat-icon">📧</div>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div class="table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th class="th-id">#</th>
+                                <th class="th-email">Email Content</th>
+                                <th class="th-result">Result</th>
+                                <th class="th-date">Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in predictions %}
+                                <tr class="table-row {% if item.result == 'Spam' %}row-spam{% else %}row-legitimate{% endif %}">
+                                    <td class="td-id">{{ item.id }}</td>
+                                    <td class="td-email">{{ item.message|truncate(80) }}</td>
+                                    <td class="td-result">
+                                        {% if item.result == 'Spam' %}
+                                            <span class="badge badge-spam">🚫 Spam</span>
+                                        {% else %}
+                                            <span class="badge badge-legitimate">✅ Legitimate</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="td-date">{{ item.created_at.strftime('%m/%d/%Y %H:%M') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h2 class="empty-title">No Analysis Yet</h2>
+                    <p class="empty-text">Start analyzing emails to build your history</p>
+                    <a href="{{ url_for('home') }}" class="btn btn-primary">
+                        <span class="btn-icon">➕</span>
+                        <span class="btn-text">Analyze First Email</span>
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="history-actions">
+                <a href="{{ url_for('home') }}" class="btn btn-primary btn-large">
+                    <span class="btn-icon">🏠</span>
+                    <span class="btn-text">Back to Home</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text">Developed by Aastha Gupta | CSE | AI Project</p>
+    </footer>
+</body>
+</html>

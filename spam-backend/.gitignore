@@ -1,0 +1,316 @@
+
+# =============================================================================
+# .gitignore — Full-Stack Project (React Frontend + Python Backend)
+# =============================================================================
+
+
+# =============================================================================
+# SECTION 1: ENVIRONMENT & SECRETS (Global)
+# =============================================================================
+
+# Environment variable files — NEVER commit secrets
+.env
+.env.*
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+*.env
+
+# Secret / config files
+secrets.json
+secrets.yaml
+secrets.yml
+config/secrets.*
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+
+
+# =============================================================================
+# SECTION 2: OS-SPECIFIC FILES
+# =============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+
+
+# =============================================================================
+# SECTION 3: EDITOR & IDE FILES
+# =============================================================================
+
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# JetBrains / IntelliJ (PyCharm, WebStorm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim / Neovim
+*.swp
+*.swo
+*.swn
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+
+
+# =============================================================================
+# SECTION 4: FRONTEND — React / Node.js (/frontend or /spam-frontend)
+# =============================================================================
+
+# Dependencies
+frontend/node_modules/
+spam-frontend/node_modules/
+node_modules/
+
+# Build outputs
+frontend/build/
+frontend/dist/
+frontend/.next/
+frontend/out/
+spam-frontend/build/
+spam-frontend/dist/
+spam-frontend/.next/
+spam-frontend/out/
+
+# Cache & temp files
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.eslintcache
+frontend/.stylelintcache
+frontend/.prettiercache
+spam-frontend/.cache/
+spam-frontend/.parcel-cache/
+spam-frontend/.eslintcache
+spam-frontend/.stylelintcache
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/lerna-debug.log*
+spam-frontend/npm-debug.log*
+spam-frontend/yarn-debug.log*
+spam-frontend/yarn-error.log*
+
+# Lock files (keep package-lock.json or yarn.lock — not both)
+# Uncomment below if you prefer to ignore lock files:
+# frontend/package-lock.json
+# frontend/yarn.lock
+# spam-frontend/package-lock.json
+# spam-frontend/yarn.lock
+
+# Testing
+frontend/coverage/
+spam-frontend/coverage/
+frontend/.nyc_output/
+spam-frontend/.nyc_output/
+
+# Runtime / misc
+frontend/.env*
+spam-frontend/.env*
+frontend/*.local
+spam-frontend/*.local
+frontend/public/hot-update.*
+spam-frontend/public/hot-update.*
+
+
+# =============================================================================
+# SECTION 5: BACKEND — Python / Flask / FastAPI (/backend or /spam-backend)
+# =============================================================================
+
+# Virtual environments
+backend/venv/
+backend/.venv/
+backend/env/
+backend/.env/
+backend/ENV/
+spam-backend/venv/
+spam-backend/.venv/
+spam-backend/env/
+spam-backend/.env/
+spam-backend/ENV/
+venv/
+.venv/
+
+# Compiled Python files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+backend/build/
+backend/dist/
+backend/*.egg-info/
+backend/*.egg
+spam-backend/build/
+spam-backend/dist/
+spam-backend/*.egg-info/
+spam-backend/*.egg
+*.egg-info/
+dist/
+build/
+MANIFEST
+
+# Testing & coverage
+.pytest_cache/
+backend/.pytest_cache/
+spam-backend/.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+backend/htmlcov/
+spam-backend/htmlcov/
+nosetests.xml
+test-results/
+*.testmondata
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Linting / formatting cache
+.ruff_cache/
+.flake8
+.pylintrc.cache
+
+# Flask / FastAPI specific
+instance/
+backend/instance/
+spam-backend/instance/
+flask_session/
+backend/flask_session/
+spam-backend/flask_session/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Jupyter Notebooks (if used for model training)
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ML / AI model artifacts (uncomment if you want to ignore trained models)
+# *.pkl
+# *.joblib
+# *.h5
+# *.pt
+# *.pth
+# models/
+
+
+# =============================================================================
+# SECTION 6: DATABASE FILES (Optional — uncomment as needed)
+# =============================================================================
+
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# PostgreSQL dumps
+*.sql
+*.dump
+
+# MongoDB dumps (keep commented unless you export dumps locally)
+# dump/
+
+# Redis
+dump.rdb
+
+
+# =============================================================================
+# SECTION 7: LOGS (Global)
+# =============================================================================
+
+logs/
+*.log
+*.log.*
+log/
+backend/logs/
+spam-backend/logs/
+frontend/logs/
+spam-frontend/logs/
+
+
+# =============================================================================
+# SECTION 8: DOCKER & INFRASTRUCTURE
+# =============================================================================
+
+# Docker overrides (keep docker-compose.yml, ignore local overrides)
+docker-compose.override.yml
+.dockerignore
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+
+
+# =============================================================================
+# SECTION 9: MISC / TEMPORARY FILES
+# =============================================================================
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.orig
+*.rej
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
