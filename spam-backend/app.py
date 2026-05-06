@@ -13,7 +13,6 @@ import os
 from datetime import datetime, timedelta
 from functools import wraps
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
 from dotenv import load_dotenv
 
 # ==================== ENV LOAD ====================
@@ -22,18 +21,19 @@ load_dotenv()
 # ==================== APP SETUP ====================
 app = Flask(__name__)
 
+# CORS (safe for frontend connection)
 CORS(app,
      origins="*",
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
      allow_headers=["Content-Type", "Authorization"])
 
+# Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ==================== CONFIG ====================
 JWT_SECRET = os.environ.get("JWT_SECRET", "change_this_secret")
 JWT_EXPIRY_HOURS = 24
-
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/")
 
 # ==================== DATABASE ====================
@@ -128,6 +128,7 @@ def health():
     return jsonify({"status": "ok"})
 
 
+# ==================== PREDICT ====================
 @app.route("/predict", methods=["POST", "OPTIONS"])
 @require_auth
 def predict():
@@ -137,47 +138,69 @@ def predict():
     if not MODEL_READY:
         return jsonify({"error": "Model not loaded"}), 500
 
-    data = request.get_json()
-    message = data.get("message", "")
+    data = request.get_json(silent=True) or {}
+    message = data.get("message", "").strip()
 
     if not message:
         return jsonify({"error": "Empty message"}), 400
 
-    vec = vectorizer.transform([message])
-    result_raw = model.predict(vec)[0]
+    try:
+        vec = vectorizer.transform([message])
+        result_raw = model.predict(vec)[0]
 
-    result = "Spam" if str(result_raw).lower() == "spam" else "Not Spam"
+        result = "Spam" if str(result_raw).lower() == "spam" else "Not Spam"
 
-    return jsonify({
-        "result": result,
-        "message": message
-    })
+        # Save history
+        if predictions_col:
+            predictions_col.insert_one({
+                "user_id": request.user["user_id"],
+                "email": request.user["email"],
+                "message": message,
+                "result": result,
+                "created_at": datetime.utcnow()
+            })
+
+        return jsonify({
+            "result": result,
+            "message": message
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Predict Error: {e}")
+        return jsonify({"error": "Prediction failed"}), 500
 
 
-# ==================== AUTH (BASIC) ====================
-
+# ==================== REGISTER ====================
 @app.route("/register", methods=["POST"])
 def register():
     data = request.json
-    email = data["email"]
-    password = data["password"]
-    name = data["name"]
+
+    email = data.get("email")
+    password = data.get("password")
+    name = data.get("name")
+
+    if not email or not password or not name:
+        return jsonify({"error": "Missing fields"}), 400
 
     hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
-    users_col.insert_one({
-        "email": email,
-        "password": hashed,
-        "name": name
-    })
+    try:
+        users_col.insert_one({
+            "email": email,
+            "password": hashed,
+            "name": name
+        })
+        return jsonify({"message": "User created"}), 201
+    except Exception:
+        return jsonify({"error": "User already exists"}), 409
 
-    return jsonify({"message": "User created"})
 
-
+# ==================== LOGIN ====================
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
-    user = users_col.find_one({"email": data["email"]})
+
+    user = users_col.find_one({"email": data.get("email")})
 
     if not user:
         return jsonify({"error": "Invalid login"}), 401
@@ -190,8 +213,7 @@ def login():
     return jsonify({"token": token})
 
 
-# ==================== MAIN (IMPORTANT FIX) ====================
-
+# ==================== MAIN ====================
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
